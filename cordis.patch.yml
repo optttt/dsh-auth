@@ -7,15 +7,17 @@
         enabled: true
         idleMinutes: 30
         maxAgeMinutes: 1440
+        lanProxy: true
+        lanPort: 3080
 
-# ── 网络访问（绑定 0.0.0.0）───────────────────────────────────────────────
-# dsh CLI 出于安全禁止 --host 0.0.0.0；装了认证插件后由认证网关保护，
-# 这里直接覆盖 webserver 行的配置允许对外绑定：
-#   - 默认绑定 0.0.0.0（局域网可访问，登录页 + 认证网关保护）
-#   - 设环境变量 DSH_AUTH_BIND=127.0.0.1 或命令行 --host 127.0.0.1 可仅本机
-#   - 注意：--host 0.0.0.0 仍会被 CLI 拒绝；--host 其他值也不被 webserver 模式接受
+# ── 网络访问（反向代理）────────────────────────────────────────────────────
+# DSH 的 /api 有 browser-trust 围栏（仅信任回环 + 派生 LAN IP，但连接行配置
+# 传递有 bug，LAN 直连时 /api 全部 403）。改为：真实服务器只绑 127.0.0.1，
+# 插件另起一个 0.0.0.0:<lanPort> 的反代，把请求转给回环并改写 Host/Origin，
+# 让围栏按回环放行 —— 局域网下所有 /api（设置/文件/变更等插件）都可用。
+# 环境变量 DSH_AUTH_PORT 可覆盖 lanPort；DSH_AUTH_PROXY=off 可关闭反代。
 - id: webserver
   inject: [webStartup]
   config:
-    host: !!js "ctx.webStartup.host ?? (process.env.DSH_AUTH_BIND === '127.0.0.1' ? '127.0.0.1' : '0.0.0.0')"
-    port: !!js ctx.webStartup.port ?? 3080
+    host: '127.0.0.1'
+    port: 0
