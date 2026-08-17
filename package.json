@@ -1,5 +1,5 @@
 {
-  "name": "@optttt/dsh-auth",
+  "name": "@tyler9061/dsh-auth",
   "version": "0.1.0",
   "description": "dsh web 认证插件：登录保护、空闲自动登出、认证有效期、设置界面、`dsh web p` 重置密码",
   "type": "module",
