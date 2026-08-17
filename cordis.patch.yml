@@ -2,7 +2,7 @@
 # 配置默认值可在这里覆盖；运行期修改（设置界面 / dsh web p）写入 $DSH_HOME/auth.json。
 - insert:
     - id: dsh-auth
-      name: 'dsh-auth'
+      name: '@optttt/dsh-auth'
       config:
         enabled: true
         idleMinutes: 30
