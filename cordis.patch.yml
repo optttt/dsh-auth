@@ -1,0 +1,9 @@
+# dsh-auth bundle layer: 为 web 表面加认证网关（登录保护 + 空闲自动登出 + 设置界面）。
+# 配置默认值可在这里覆盖；运行期修改（设置界面 / dsh web p）写入 $DSH_HOME/auth.json。
+- insert:
+    - id: dsh-auth
+      name: 'dsh-auth'
+      config:
+        enabled: true
+        idleMinutes: 30
+        maxAgeMinutes: 1440
