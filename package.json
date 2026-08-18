@@ -24,6 +24,9 @@
     "security"
   ],
   "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
