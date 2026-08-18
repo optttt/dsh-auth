@@ -1,63 +1,84 @@
 # dsh-auth
 
-DeepSeek Harness 认证插件：访问 dsh web 需要登录（用户名+密码）；空闲 N 分钟自动登出；
-认证有效期；单点登录；设置界面可改用户名/密码/过期时间；`dsh web p` 重置密码、
-`dsh web u` 改用户名。
+English | [中文](./README.zh.md)
+
+Authentication plugin for DeepSeek Harness: accessing dsh web requires sign-in
+(username + password); idle sessions log out automatically; sessions expire
+after a configurable max age; single sign-on mode; the settings UI changes the
+username / password / expiry times; `dsh web p` resets the password and
+`dsh web u` changes the username.
 
 - GitHub: https://github.com/optttt/dsh-auth
 - npm: https://www.npmjs.com/package/@tyler9061/dsh-auth
 
-## 安装
+## Install
 
-从 npm 安装（推荐）：
+From npm (recommended):
 
 ```
 dsh plugin --profile web add @tyler9061/dsh-auth
 ```
 
-从源码目录安装（开发调试，实时联动本地代码）：
+From a source directory (development; live-links local code):
 
 ```
 dsh plugin --profile web add link:/path/to/dsh-auth
 ```
 
-安装后重启 dsh web 生效。
+Restart dsh web after installing.
 
-## 使用
+## Usage
 
-- 首次启动会在服务器控制台打印**用户名和密码**（默认用户名 `admin`）。之后访问
-  `127.0.0.1:3080`（或局域网地址）会被重定向到 /login。
-- **设置 > 认证**：修改用户名 / 密码、空闲登出分钟数、认证有效期、单点登录、退出登录。
-- **单点登录**：开启后每次新登录会使其他所有会话失效；被踢的旧客户端回到登录页并显示
-  提醒——「如非本人操作，请立即修改密码」。
-- 忘记凭据：`dsh web p` 生成随机密码并打印（或 `dsh web p 我的密码`）；
-  `dsh web u 新用户名` 修改用户名（3-32 位字母数字 `_``-`）。
+- On first start the server console prints the initial **username** and
+  **password** (default username `admin`). Visiting the web UI redirects to /login.
+- **Settings > Auth**: change username / password, idle logout minutes,
+  session max age (minutes), single sign-on, and sign out.
+- **Single sign-on**: when enabled, every new login invalidates all other
+  sessions. Kicked clients land on the login page with a warning —
+  "if this was not you, change the password immediately".
+- Forgot credentials: `dsh web p` prints a new random password (or
+  `dsh web p mypass`); `dsh web u newname` changes the username
+  (3-32 chars, letters/digits/`_``-`).
 
-## 网络访问（局域网）
+## Network access (LAN)
 
-真实服务器只绑 `127.0.0.1`，插件另起一个 `0.0.0.0:<lanPort>` 的反向代理
-（默认 3080，可用环境变量 `DSH_AUTH_PORT` 覆盖）把请求转给回环，并改写 Host/Origin，
-使 DSH 自带的 /api 信任围栏按回环放行——**局域网下所有 /api（设置、文件、变更、
-其他插件）都可用**。认证网关仍保护整个表面（登录后才能访问）。
+The real server binds `127.0.0.1` only; the plugin runs a reverse proxy on
+`0.0.0.0:<lanPort>` (default 3080, override with `DSH_AUTH_PORT`) that
+forwards to loopback and rewrites Host/Origin, so the built-in /api trust fence
+accepts every request — **all /api RPCs (settings, files, SCM, other plugins)
+work from LAN clients**. The auth gateway still protects everything.
 
-- 局域网地址：`http://<本机IP>:3080`（启动日志会打印）
-- `--host 0.0.0.0` 仍被 CLI 拒绝；对外访问走代理默认配置即可
+- LAN URL: `http://<LAN-IP>:3080` (printed at startup).
+- `--host 0.0.0.0` stays rejected by the CLI; use the proxy defaults.
+- The proxy forwards the WebSocket upgrade's first data frame correctly (never as an
+  HTTP request body); either end closing tears down the other, so no half-open tunnels
+  are left behind.
 
-## 国际化与主题
+## i18n & theme
 
-- 插件 UI 文案跟随主客户端语言（中/英，`ctx.locale`）；登录页按浏览器语言切换
-- 设置界面颜色使用主客户端设计令牌（`--dsw-alias-*`），亮/暗主题自动适配
+- UI strings follow the main client language (zh/en via `ctx.locale`);
+  the login page follows the browser language.
+- The settings UI uses the main client design tokens (`--dsw-alias-*`) and
+  adapts to light/dark themes automatically.
 
-## 数据
+## Data
 
-认证数据存于 `$DSH_HOME/auth.json`（默认 `~/.dsh/auth.json`）：
+Stored in `$DSH_HOME/auth.json` (default `~/.dsh/auth.json`):
 
-- 密码：scrypt 加盐哈希（node:crypto，零运行时依赖）
-- 会话：随机 token + HttpOnly/SameSite Cookie；空闲超时与有效期到期自动失效；
-  改密码/改用户名/单点登录会作废其他会话并给被踢客户端留提醒
-- 用户名：默认 `admin`，可用 CLI 或设置界面修改
+- Password: scrypt salted hash (node:crypto, zero runtime dependencies)
+- Sessions: random tokens + HttpOnly/SameSite cookies; idle timeout and
+  max-age expiry are enforced; password/username changes and single sign-on
+  invalidate other sessions and notify the kicked clients; the idle activity
+  timestamp is throttled-persisted so idle timers survive process restarts
+- Username: default `admin`; change via CLI or the settings UI
 
-## 安全说明
+## Development
 
-- 认证保护整个 web 表面（HTTP/API/WebSocket 升级均过网关）
-- 初始密码务必在首次登录后修改；生产环境建议配合 HTTPS 反代
+```
+npm test        # node:test unit tests
+```
+
+## Security notes
+
+- Auth protects the whole web surface (HTTP/API/WebSocket upgrades pass the gateway)
+- Change the initial password after first login; use HTTPS in production
