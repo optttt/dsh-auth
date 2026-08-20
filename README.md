@@ -65,7 +65,12 @@ work from LAN clients**. The auth gateway still protects everything.
 
 Stored in `$DSH_HOME/auth.json` (default `~/.dsh/auth.json`):
 
-- Password: scrypt salted hash (node:crypto, zero runtime dependencies)
+- **Password**: scrypt salted hash (node:crypto, zero runtime dependencies),
+  AES-256-GCM encrypted at rest. The key lives in `$DSH_HOME/auth.key`
+  (mode 0600, local only; losing it requires `dsh web p` to reset). Legacy
+  plaintext data auto-migrates to ciphertext on the next save.
+- **Login history**: last successful logins (IP, time, GeoIP location; up to 50),
+  saved in `loginHistory` and shown under Settings > Auth.
 - Sessions: random tokens + HttpOnly/SameSite cookies; idle timeout and
   max-age expiry are enforced; password/username changes and single sign-on
   invalidate other sessions and notify the kicked clients; the idle activity
