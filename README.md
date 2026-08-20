@@ -39,6 +39,8 @@ Restart dsh web after installing.
 - Forgot credentials: `dsh web p` prints a new random password (or
   `dsh web p mypass`); `dsh web u newname` changes the username
   (3-32 chars, letters/digits/`_``-`).
+- **Login history**: Settings > Auth lists recent successful logins
+  (IP, time, GeoIP location); the last 50 are kept.
 
 ## Network access (LAN)
 
